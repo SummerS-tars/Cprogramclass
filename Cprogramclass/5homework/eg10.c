@@ -7,6 +7,9 @@ int main()
     int  i , *ip , (*p)[ 4 ] ;
     p = a + 1 ;//p 指向 a[ 1 ]一维数组
     ip = p[ 0 ] ;//ip 指向 a[ 1 ][ 0 ]
+    //此处如果改成 ip = p 会报警
+    //warning: assignment to 'int *' from incompatible pointer type 'int (*)[4]' [-Wincompatible-pointer-types]
+    //从报警可以看出 p 在编译中的类型是 int (*)[4] 而 ip 是 int * 类型
     for( i = 1 ; i <= 4 ; ip += 2 , i ++ )
         printf("%d\t" , *ip ) ;
     puts("") ;
