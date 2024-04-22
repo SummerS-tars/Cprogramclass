@@ -2,7 +2,7 @@
 
 ## brief
 
-To sort and store my codes and mds related to my C Programming class
+To sort and store my codes and mds related to my C Programming class  
 Include some notes and homework programs(only for reference)  
 
 ## index
