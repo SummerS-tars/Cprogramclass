@@ -1,29 +1,49 @@
 #include <stdio.h>
 
-void input(int **arr, int size) {
-    printf("输入 %d 个数字:\n", size);
-    for (int i = 0; i < size; i++) {
-        arr[i] = (int*)malloc(sizeof(int));
-        scanf("%d", arr[i]);
-    }
+int main()
+{
+    int a , b , c , d , e , f , g ;
+    int *ip[] = { &a , &b , &c , &d , &e , &f , &g } ;
+    
+    void input ( int *ip[] , int n ) ;
+    void output ( int *ip[] , int n ) ;
+    void sort ( int *ip[] , int n ) ;
+
+    int n ;
+    printf("please enter the number of elements(1~7) : ") ;
+    scanf("%d" , &n ) ;
+    input( ip , n ) ;
+    output( ip , n ) ;
+    
+    sort( ip , n ) ;
+    output( ip , n ) ;
+
+    return 0 ;
 }
 
-void output(int **arr, int size) {
-    printf("数组元素: ");
-    for (int i = 0; i < size; i++) {
-        printf("%d ", *arr[i]);
-    }
-    printf("\n");
+void input ( int *ip[] , int n )
+{
+    printf("please enter %d element(s) : " , n ) ;
+    for( int i = 0 ; i < n ; i ++ )
+        scanf("%d" , ip[ i ] ) ;
 }
 
-void sort(int **arr, int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size - i - 1; j++) {
-            if (*arr[j] > *arr[j + 1]) {
-                int *temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
+void output ( int *ip[] , int n )
+{
+    for( int i = 0 ; i < n ; i ++ )
+        printf("%d " , *ip[ i ] ) ;
+    puts("") ;
+}
+
+void sort ( int *ip[] , int n )
+{
+    for( int i = 1 ; i <= n ; i ++ )
+        for( int j = 0 ; j + i < n ; j ++ )
+            if( *ip[ j ] > *ip[ j + 1 ] )
+            {
+                int *temp = ip[ j ] ;
+                ip[ j ] = ip[ j + 1 ] ;
+                ip[ j + 1 ] = temp ;
             }
-        }
-    }
+    printf("the array is sorted\n") ;
 }
