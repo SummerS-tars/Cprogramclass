@@ -20,6 +20,7 @@ void format_string ( char *s )
     else *c2 = '\0' ;
 }
 
+//test example
 int main()
 {
     char str[] = "      Whfo1jfafjoj   oseifhoehf  jiesoghoes g  fe f g s ge  !    " ;
