@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <curses.h>
+#include <conio.h>
 
 struct playerInfo   // 玩家信息
 {
@@ -36,5 +36,5 @@ void judgeAction()  // 判断行动结果
 
 int main()
 {
-
+    
 }
