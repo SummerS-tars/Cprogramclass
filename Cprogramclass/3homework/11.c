@@ -4,7 +4,7 @@
 
 int main()
 {
-    int rest[ 100 ] = { 0 } ;//存储每一位算术留下的余数
+    int rest[ 100 ] = { 0 } ;                           //存储每一位算术留下的余数
     char str[ 100 ] ;
 
 
@@ -15,16 +15,17 @@ int main()
         
         int d = 1 ;
 
-        int tt = -1 ;
-        for ( int j = 0 ; j < 100 ; j ++ )//模拟竖式运算,这个很有用！
+        int tt = -1 ;                                   //用于存储循环节的尾部序号
+        for ( int j = 0 ; j < 100 ; j ++ )              //模拟竖式运算,这个很有用！
         {
             d *= 10 ;
             rest[ j ] = d % i ;
             str[ j ] = d / i + '0';
+            if( rest[ j ] == 0 ) break ;                //如果余数为0，说明除尽了
 
             bool loop = false ;
             for ( int k = 0 ; k < j ; k ++ )
-                if ( rest[ j ] == rest[ k ] )
+                if ( rest[ j ] == rest[ k ] )           //如果余数重复，说明有循环节
                 {
                     loop = true ;
                     tt = j ;
@@ -34,7 +35,7 @@ int main()
             d %= i ;
         }
         
-        if ( tt > 0 & str[ tt ] == str[ tt - 1 ] ) str[ tt ] = '\0' ;
+        if ( tt > 0 && str[ tt ] == str[ tt - 1 ] ) str[ tt ] = '\0' ;      //如果循环节的尾部和循环节的前一个字符相同，说明循环节的尾部多了一个字符
         printf("%s\n" , str) ;
     }
 
