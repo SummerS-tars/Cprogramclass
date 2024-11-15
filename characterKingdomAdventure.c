@@ -9,17 +9,26 @@ struct playerInfo   // 玩家信息
     int isTrapped ;     // 陷阱触发状态
 };
 
+struct mapInfo
+{
+    char map[ 50 ][ 50 ] ;      // 地图信息
+    int mapRow ;                // 地图行数
+    int mapCol ;                // 地图列数
+    int treasureNum ;           // 宝藏数量
+    int trapNum ;               // 陷阱数量
+};
+
 void menu()         // 菜单栏目
 {
     // TODO
 }
 
-void iniLaby()      // 初始化迷宫
+void iniMap()      // 初始化迷宫
 {
     // TODO
 }
 
-void prLaby()        // 打印迷宫
+void prMap()        // 打印迷宫
 {
     // TODO
 }

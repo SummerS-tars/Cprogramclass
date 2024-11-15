@@ -1,4 +1,4 @@
-# Log
+# Development Log
 
 ## Basic Information
 
@@ -11,7 +11,7 @@ Compiler            : gcc (GCC) 14.1.0
 ### Content
 
 use char array to store  
-details can be seen in [Menu](partFunction\1_Menu\00_1_menu.c)  
+details can be seen in [Menu](partFunction\1_Menu\01_1_menu.c)  
 
 **two ways to clear the screen**  
 
