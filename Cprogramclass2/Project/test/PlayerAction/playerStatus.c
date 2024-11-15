@@ -8,7 +8,7 @@ extern struct playerInfo
     int getTrap ;               // 是否触发陷阱
 };
 
-extern statusJudge( struct playerInfo *player )
+extern moveJudge( struct playerInfo *player )
 {
     
 }
