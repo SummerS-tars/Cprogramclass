@@ -188,16 +188,17 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
     int mapCol = mapInfo->mapCol;
     int moveFlag = 0; // 0表示位置不变，1表示位置改变
 
-    /*
-    返回值介绍：
-    -1:无效行动或者直接结束游戏
-    0:正常行动
-    1:撞墙
-    2:休息
-    3:触发陷阱
-    4:获得宝藏
-    5:获得所有宝藏
-    */
+    /**
+     * 返回值介绍：
+     * -1:无效行动或者直接结束游戏
+     * 0:正常行动
+     * 1:撞墙
+     * 2:休息
+     * 3:触发陷阱
+     * 4:获得宝藏
+     * 5:获得所有宝藏
+     */
+    
 
     // 判断玩家行动
     switch (order)
@@ -270,7 +271,8 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
         break;
     }
 
-    /* 地图信息说明:
+    /**
+     * 地图信息说明:
      * 'D'陷阱
      * 'T'宝藏
      * ' '空地
