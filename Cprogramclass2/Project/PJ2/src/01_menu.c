@@ -6,10 +6,10 @@
 #include "02_cursorOperation.h"
 #include "04_mapCustom.h"
 
-// 菜单列表
+/* 菜单列表 */
 static char menuMainList[3][40] = { // 主菜单列表
     {"开始游戏"},
-    {"获取帮助"},
+    {"帮助菜单"},
     {"退出游戏"}};
 static char menuGameList[5][40] = { // 游戏菜单列表
     {"第一关"},
@@ -17,48 +17,115 @@ static char menuGameList[5][40] = { // 游戏菜单列表
     {"第三关"},
     {"自定义关卡"},
     {"返回主菜单"}};
-static char menuControlMode[3][40] = { // 控制模式菜单列表
+static char menuControlMode[4][40] = { // 控制模式菜单列表
     {"实时模式"},
     {"编程模式"},
+    {"帮助菜单"},
     {"返回地图菜单"}};
 static char menuCustomMap[4][40] = { // 自定义地图菜单列表
     {"自定义地图一"},
     {"自定义地图二"},
     {"自定义地图三"},
     {"返回地图菜单"}};
-static char menuCustomOperation[4][40] = { // 自定义操作菜单列表
+static char menuCustomOperation[5][40] = { // 自定义操作菜单列表
     {"开始编辑"},
     {"开始游玩"},
     {"重置地图"},
+    {"帮助菜单"},
     {"返回自定义菜单"}};
-static char (*menuList[5])[40] = {
+static char menuProgressList[4][40] = { // 已游玩地图进度选择列表
+    {"继续上次游戏"},
+    {"开始新游戏"},
+    {"清除存档"},
+    {"返回主菜单"}};
+
+/* 菜单相关信息列表 */
+static char (*menuList[6])[40] = {
     menuMainList,
     menuGameList,
     menuControlMode,
     menuCustomMap,
-    menuCustomOperation};
-static int menuOption[5] = {3, 5, 3, 4, 4}; // 菜单选项数量
-
-static void menuPrint(int menuOrder, int listPos) // 菜单函数，根据listPos变量控制光标位置
-{
-    for (int i = 0; i < menuOption[menuOrder]; i++)
-    {
-        if (i == listPos)
-            printf("> ");
-        else
-            printf("  ");
-        printf("%s\n", menuList[menuOrder] + i);
-    }
-    printf("\n输入w上移光标,s下移光标,输入<Enter>选中\n");
-}
+    menuCustomOperation,
+    menuProgressList};
+static int menuOption[6] = {3, 5, 4, 4, 5, 4}; // 菜单选项数量
+static int mapPlayStatus[6] = {0, 0, 0, 0, 0, 0};   // 地图游玩状态
+static int mapEditStatus[3] = {0, 0, 0};            // 地图编辑状态
 
 static void menuCall0(int *Order, int *run);         // 主菜单执行函数
 static void menuCall1(int *Order);                   // 游戏菜单执行函数
 static int menuCall2(int *Order);                    // 控制模式菜单执行函数
 static void menuCall3(int *Order);                   // 自定义地图菜单执行函数
 static void menuCall4(int *Order, int customMapNum); // 自定义操作菜单执行函数
+static int menuCall5(int mapOrder);                              // 已游玩地图进度选择函数
+static void gameStart(int *Order, int num);        // 游戏开始函数
 
-static void welcome()
+void mapInfoInit()     // 地图游玩（以及自定义地图编辑）状态初始化函数
+{
+    /* 检测自定义地图编辑状态 */
+    for( int i = 1 ; i <= 3 ; i ++ )
+    {
+        FILE *mapfp = NULL ;
+        mapfp = fopen( mapName[ i + 2 ] , "r" ) ;
+        char editFlag = 0 ;
+        editFlag = fgetc( mapfp ) ;
+        if( editFlag == '*' ) mapEditStatus[ i - 1 ] = 0 ; // 未编辑
+        else mapEditStatus[ i - 1 ] = 1 ; // 已编辑
+        fclose( mapfp ) ;
+    }
+
+    /* 检测地图游玩状态 */
+    for( int i = 1 ; i <= 6 ; i ++ )
+    {
+        FILE *mapfp = NULL ;
+        mapfp = fopen( mapProgressSave[ i - 1 ] , "r" ) ;
+        char playFlag = 0 ;
+        playFlag = fgetc( mapfp ) ;
+        if( playFlag == '*' ) mapPlayStatus[ i - 1 ] = 0 ; // 未游玩
+        else mapPlayStatus[ i - 1 ] = 1 ; // 已游玩
+        fclose( mapfp ) ;
+    }
+}
+
+static void menuPrint(int menuOrder, int listPos) // 菜单打印函数，根据listPos变量控制光标位置
+{
+    for (int i = 0; i < menuOption[menuOrder]; i++)
+    {
+        /* 打印基础选项信息 */
+        if (i == listPos)
+            printf("> ");
+        else
+            printf("  ");
+        printf("%s", menuList[menuOrder] + i);
+
+        /* 自定义地图编辑状态补充 */
+        if( menuOrder == 3 && i >= 0 && i <= 2 && !mapEditStatus[ i ] )
+            printf("(未编辑)");
+
+        /* 地图游玩状态补充 */
+        if( menuOrder == 1 && i >= 0 && i <= 2 && mapPlayStatus[ i ] )
+            printf("(上次)");
+        else if( menuOrder == 3 && i >= 0 && i <= 2 && mapPlayStatus[ i + 3 ] )
+            printf("(上次)");
+        
+        printf("\n");
+    }
+    printf("\n输入w上移光标,s下移光标,输入<Enter>选中\n");
+    
+    /*
+    // TODO: test
+    printf("\n");
+    printf("mapPlayStatus: ") ;
+    for( int i = 0 ; i < 6 ; i ++ )
+        printf("%d" , mapPlayStatus[i] ) ;
+    puts("") ;
+    printf("mapEditStatus: ") ;
+    for( int i = 0 ; i < 3 ; i ++ )
+        printf("%d" , mapEditStatus[i] ) ;
+    puts("") ;
+    */
+}
+
+static void welcome()   // 欢迎界面
 {
     ClearPartialScreen(0, 0);
     printf("欢迎来到小黄的奇妙冒险\n");
@@ -68,51 +135,9 @@ static void welcome()
     return;
 }
 
-void menuControl()
-{
-    welcome();
-
-    int run = 1;
-    int menuOrder = 0;
-    while (run)
-    {                      // 循环逻辑：通过run控制菜单的退出
-        switch (menuOrder) // 菜单选取逻辑：通过menuOrder变量控制菜单的选择
-        {
-        case 0:
-            menuCall0(&menuOrder, &run);
-            break;
-        case 1:
-            menuCall1(&menuOrder);
-            break;
-        case 2:
-            menuCall2(&menuOrder);
-            break;
-        case 3:
-            menuCall3(&menuOrder);
-            break;
-        }
-    }
-}
-
-static void gameStart(int gameMode, int num)
-{
-    struct mapInfo map;
-    struct playerInfo player;
-    mapIni(&map);
-    if (!mapInput(&map, num))
-        return; // 读取地图失败则直接返回
-    playerIni(&player, &map);
-    mapPrint(&map);
-    HideConsoleCursor();
-    if (gameMode == 0)
-        playerMove(&player, &map);
-    else if (gameMode == 1)
-        playerMovePro(&player, &map);
-    ShowConsoleCursor();
-}
-
 static void menuCall0(int *Order, int *run) // 主菜单执行函数
 {
+    mapInfoInit();
     int pos = 0;
     while (1)
     {
@@ -175,6 +200,7 @@ static void menuCall1(int *Order) // 游戏菜单执行函数
     int pos = 0;
     while (1)
     {
+        mapInfoInit();
         system("cls");
         menuPrint(1, pos);
 
@@ -189,35 +215,17 @@ static void menuCall1(int *Order) // 游戏菜单执行函数
             {
             case 0: // 第一关函数
             {
-                int gameMode = menuCall2(Order);
-                if (gameMode == 2)
-                    return;
-
-                gameStart(gameMode, 1);
-                Order = 0;
-                welcome();
+                gameStart(Order , 1);
                 return;
             }
             case 1: // 第二关函数
             {
-                int gameMode = menuCall2(Order);
-                if (gameMode == 2)
-                    return;
-
-                gameStart(gameMode, 2);
-                Order = 0;
-                welcome();
+                gameStart(Order , 2);;
                 return;
             }
             case 2: // 第三关函数
             {
-                int gameMode = menuCall2(Order);
-                if (gameMode == 2)
-                    return;
-
-                gameStart(gameMode, 3);
-                Order = 0;
-                welcome();
+                gameStart(Order , 3);
                 return;
             }
             case 3:
@@ -253,18 +261,24 @@ static int menuCall2(int *Order) // 控制模式菜单执行函数
             case 1:
                 return 1; // 编程模式函数
             case 2:
-                *Order = 1;
+            {
+                system("cls");
+                printf("help file 2 施工中\n") ;
+                // TODO: 编写控制模式帮助文档
+            }
+            case 3:
                 return 2;
             }
         }
     }
 }
 
-static void menuCall3(int *Order) // 自定义地图菜单执行函数
+static void menuCall3(int *Order) // 自定义地图地图选择菜单执行函数
 {
     int pos = 0;
     while (1)
     {
+        mapInfoInit();
         system("cls");
         menuPrint(3, pos);
 
@@ -318,23 +332,141 @@ static void menuCall4(int *Order, int customMapNum) // 自定义操作菜单执行函数
             }
             case 1:
             {
-                int gameMode = menuCall2(Order);
-                if (gameMode == 2)
-                    return;
-
-                gameStart(gameMode, customMapNum + 3);
-                Order = 0;
-                welcome();
+                gameStart(Order , customMapNum + 3);
                 return;
             }
             case 2:
             {
                 mapCustomIni(customMapNum, 1);
+                mapInfoInit();
                 break;
             }
             case 3:
+            {
+                system("cls");
+                printf("help file 3 施工中\n") ;
+                // TODO: 编写自定义地图帮助文档
+            }
+            case 4:
+                *Order = 3;
                 return;
             }
+        }
+    }
+}
+
+static int menuCall5(int mapOrder)      // 已游玩地图进度选择函数
+{
+    int pos = 0 ;
+    FILE *mapfp = NULL ;
+    mapfp = fopen( mapProgressSave[ mapOrder - 1 ] , "r" ) ;
+    char timeStr1[64] = {0} ;
+    char timeStr2[64] = {0} ;
+    int treasureInfoPlayer , treasureInfoMap ;
+    fscanf( mapfp , "%s %s\n" , timeStr1 , timeStr2 ) ;              // 写入保存时间
+    fscanf( mapfp , "%d %d\n" , &treasureInfoPlayer , &treasureInfoMap ) ; // 读取宝藏信息
+    fclose( mapfp ) ;
+    
+    while( 1 )
+    {
+        system("cls");
+        printf("上次游玩时间：%s %s\n" , timeStr1 , timeStr2 ) ;
+        printf("上次游玩宝藏：%d/%d\n\n" , treasureInfoPlayer , treasureInfoMap ) ;
+        
+        menuPrint(5, pos);
+
+        char ch = getch();
+        if( ch == 'w' && pos > 0 )
+            pos -- ;
+        if( ch == 's' && pos < menuOption[5] - 1 )
+            pos ++ ;
+        if( ch == '\r' )
+            return pos + 1;
+            /**
+             * 返回值介绍：
+             * 1：继续上次游戏
+             * 2：开始新游戏
+             * 3: 清除存档
+             * 4：返回主菜单
+             */
+    }
+}
+
+static void gameStart( int *Order , int num ) // 游戏开始函数
+{
+    mapInfoInit();
+    /* 是否继续游戏 */
+    int keepProgress = 0;
+    if( mapPlayStatus[ num - 1 ] )
+    {
+        int progressOrder = menuCall5( num ) ;
+        if( progressOrder == 1 ) // 继续上次游戏
+            keepProgress = 1;
+        else if( progressOrder == 2 ) // 开始新游戏
+            keepProgress = 0;
+        else if( progressOrder == 3 ) // 清除存档
+        {
+            progressSaveInit( num ) ;
+            mapInfoInit() ;
+            return ;
+        }
+        else if( progressOrder == 4 ) // 返回主菜单
+            return;
+    }
+
+    /* 选择控制模式 */
+    int gameMode = menuCall2(Order);
+    if (gameMode == 2)
+        return;
+
+    /* 初始化 */
+    struct mapInfo map;
+    struct playerInfo player;
+    mapIni(&map);
+    if (!mapInput(&map, num))
+        return; // 读取地图失败则直接返回
+    playerIni(&player, &map);
+    if( keepProgress )
+        progressLoad( &player , &map , num ) ;
+    mapPrint(&map);
+    HideConsoleCursor();
+
+    /* 按控制模式进入游戏主体 */
+    if (gameMode == 0)
+        playerMove(&player, &map, num);
+    else if (gameMode == 1)
+        playerMovePro(&player, &map, num);
+    ShowConsoleCursor();
+
+    /* 完成游戏，返回主菜单 */
+    Order = 0;
+    mapInfoInit();
+    welcome();
+}
+
+void menuControl()      // 菜单运行控制主函数
+{
+    welcome();
+
+    int run = 1;
+    int menuOrder = 0;
+    mapInfoInit();
+    while (run)
+    {                      // 循环逻辑：通过run控制菜单的退出
+        switch (menuOrder) // 菜单选取逻辑：通过menuOrder变量控制菜单的选择
+        {
+        case 0:
+            menuCall0(&menuOrder, &run);
+            break;
+        case 1:
+            menuCall1(&menuOrder);
+            break;
+        case 2:
+            menuCall2(&menuOrder);
+            break;
+        case 3:
+            menuCall3(&menuOrder);
+            break;
         }
     }
 }

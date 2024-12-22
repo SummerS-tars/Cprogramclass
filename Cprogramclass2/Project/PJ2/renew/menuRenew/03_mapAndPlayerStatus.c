@@ -1,13 +1,11 @@
-#include "01_menu.h"
-#include "02_cursorOperation.h"
 #include "03_mapAndPlayerStatus.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
-#include <time.h>
+#include "02_cursorOperation.h"
 
-static const char moveInfo[7][100] = {      // 用于输出的移动信息
+const char moveInfo[7][100] = {
     {"平平无奇地在空地上进行了移动..."},
     {"你装上了墙壁，两眼一黑！"},
     {"你狠狠地在原地休息了一下，什么也没有发生..."},
@@ -15,23 +13,10 @@ static const char moveInfo[7][100] = {      // 用于输出的移动信息
     {"你终于找到了一个宝藏，恭喜你!"},
     {"你找齐了所有的宝藏，恭喜你!"},
     {"你的操作无效，什么也没有发生..."}};
-extern char mapName[6][40] = {  // 地图文件名
-    {"map1.map"}, 
-    {"map2.map"}, 
-    {"map3.map"}, 
-    {"mapCustom1.map"},
-    {"mapCustom2.map"}, 
-    {"mapCustom3.map"}};
-extern char mapProgressSave[6][40] = { // 地图进度保存文件名
-    {"map1.save"}, 
-    {"map2.save"}, 
-    {"map3.save"}, 
-    {"mapCustom1.save"},
-    {"mapCustom2.save"}, 
-    {"mapCustom3.save"}};
 
-static int infoPrix, infoPriy;  // 用于存储游戏信息输出位置
-static int runGame;         // 游戏运行状态:0表示结束，1表示运行
+int runGame; // 游戏运行状态
+
+static int infoPrix, infoPriy;
 
 void mapIni(struct mapInfo *mapInfo) // 初始化迷宫
 {
@@ -46,7 +31,29 @@ void mapIni(struct mapInfo *mapInfo) // 初始化迷宫
 int mapInput(struct mapInfo *mapInfo, int mapOrder) // 输入迷宫
 {
     FILE *mapfp = NULL;
-    mapfp = fopen(mapName[mapOrder - 1], "r");
+    switch (mapOrder)
+    {
+    case 1:
+        mapfp = fopen("map1.txt", "r");
+        break;
+    case 2:
+        mapfp = fopen("map2.txt", "r");
+        break;
+    case 3:
+        mapfp = fopen("map3.txt", "r");
+        break;
+    case 4:
+        mapfp = fopen("mapCustom1.txt", "r");
+        break;
+    case 5:
+        mapfp = fopen("mapCustom2.txt", "r");
+        break;
+    case 6:
+        mapfp = fopen("mapCustom3.txt", "r");
+        break;
+    default:
+        break;
+    }
     if (mapfp == NULL)
     {
         printf("地图文件打开失败\n");
@@ -69,13 +76,11 @@ int mapInput(struct mapInfo *mapInfo, int mapOrder) // 输入迷宫
             fseek(mapfp, 0, SEEK_SET);
     }
 
-    /* 读取地图基本信息 */
     fscanf(mapfp, "%d%d", &mapInfo->mapRow, &mapInfo->mapCol);
     fscanf(mapfp, "%d%d", &mapInfo->treasureNum, &mapInfo->trapNum);
     fscanf(mapfp, "%d%d", &mapInfo->pRow, &mapInfo->pCol);
     fgetc(mapfp); // 读取换行符
 
-    /* 读取地图本体信息 */
     for (int i = 0; i < mapInfo->mapRow; i++)
     {
         for (int j = 0; j < mapInfo->mapCol; j++)
@@ -123,46 +128,6 @@ void playerIni(struct playerInfo *player, struct mapInfo *mapInfo) // 初始化玩家
     return;
 }
 
-void progressLoad(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) // 加载存档
-{
-    FILE *savefp = NULL;
-    savefp = fopen(mapProgressSave[mapOrder - 1], "r");
-    if( savefp == NULL )
-    {
-        printf("进度保存文件打开失败！\n") ;
-        return ;
-    }
-
-    /* 读取存档信息 */
-    char saveMovement[1000] = {0} ;
-    while( fgetc( savefp ) != '*' ) ;   // 跳跃至操作信息
-    fscanf( savefp , "%s" , saveMovement ) ; // 读取操作信息
-    fclose( savefp ) ;
-
-    /* 处理操作信息 */
-    int len = strlen( saveMovement ) ;
-    for( int i = 0 ; i < len ; i ++ )
-    {
-        char order = saveMovement[i] ;
-        switch (order) // 将操作序列转换为实际操作
-        {
-        case 'U':
-            order = 'w';
-            break;
-        case 'D':
-            order = 's';
-            break;
-        case 'L':
-            order = 'a';
-            break;
-        case 'R':
-            order = 'd';
-            break;
-        }
-        playerMoveJudge( player , mapInfo , order ) ;
-    }
-}
-
 void playerInfoPrint(struct playerInfo *player, int num) // 打印玩家信息
 {
     // 打印玩家位置
@@ -182,16 +147,16 @@ void playerInfoPrint(struct playerInfo *player, int num) // 打印玩家信息
         printf("\n");
 
     // 打印行动信息
-    /**
-     * 特殊调用-1
-     * 正常行动0
-     * 撞墙1
-     * 休息2
-     * 触发陷阱3
-     * 获得宝藏4
-     * 获得所有宝藏5
-     * 无效操作6
-     */
+    /*
+    特殊调用-1
+    正常行动0
+    撞墙1
+    休息2
+    触发陷阱3
+    获得宝藏4
+    获得所有宝藏5
+    无效操作6
+    */
     if (num >= 0)
         printf("%s\n", moveInfo[num]);
 
@@ -313,7 +278,7 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
      * ' '空地
      */
 
-    // 判断玩家如果发生位置变化后的状态变化
+    // 判断玩家位置变化后的状态变化
     if (moveFlag)
     {
         player->energyCost++;
@@ -361,7 +326,7 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
     }
 }
 
-void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)   // 撤销操作
+void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)
 {
     if (player->tt == 0)
     {
@@ -451,7 +416,7 @@ void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)   // 撤销操作
     return;
 }
 
-char moveRedo(struct playerInfo *player, struct mapInfo *mapInfo)   // 重做操作
+char moveRedo(struct playerInfo *player, struct mapInfo *mapInfo)
 {
     if (player->moveResult[player->tt] == 0)
     {
@@ -479,115 +444,31 @@ char moveRedo(struct playerInfo *player, struct mapInfo *mapInfo)   // 重做操作
     return order;
 }
 
-void saveOperation( struct playerInfo *player , struct mapInfo *mapInfo , int mapOrder )    // 保存游戏进度
-{
-    /* 打开存档文件写入 */
-    FILE *savefp = NULL ;
-    savefp = fopen( mapProgressSave[ mapOrder - 1 ] , "w" ) ;
-    if( savefp == NULL )
-    {
-        printf("进度保存文件打开失败！\n") ;
-        return ;
-    }
-
-    /* 写入存档信息 */
-    time_t t = time(NULL);
-    char timeStr[64];
-    strftime( timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&t) );
-    fprintf( savefp , "%s\n" , timeStr ) ;              // 写入保存时间
-    fprintf( savefp , "%d %d\n" , player->getTreasure , mapInfo->treasureNum ) ; // 写入宝藏信息
-    fprintf( savefp , "*%s\n" , player->moveMemory ) ;// 写入移动路径
-    fprintf( savefp , "]") ; // 写入结束标志
-
-    // 注意：如果没关闭文件，文件只有在程序退出时才会被保存
-    fclose( savefp ) ;
-}
-
-void progressAutoSave( struct playerInfo *player , struct mapInfo *mapInfo , int steps , int mode , int mapOrder )      // 自动保存游戏进度
-{
-    /* 判断是否进行自动保存 */
-    int saveFlag = 0;   // 保存标志
-    if( mode ) saveFlag = 1 ;   // 编程模式默认保存
-    else if( steps && steps % 10 == 0 ) saveFlag = 1 ;   // 实时模式每10步保存一次
-
-    if( !saveFlag ) return ;
-    saveOperation( player , mapInfo , mapOrder ) ;
-}
-
-void progressExitSave( struct playerInfo *player , struct mapInfo *mapInfo , int mapOrder)     // 退出保存游戏进度
-{
-    /* 判断是否进行保存操作 */
-    ClearPartialScreen(0, 0); // 清空屏幕
-    printf("是否保存当前游戏进度？(y/n)\n");
-    char order = '\0';
-    while( order != 'y' && order != 'n' )
-        order = getch();
-
-    if( order == 'y' )
-    {
-        saveOperation( player , mapInfo , mapOrder ) ;
-        ClearPartialScreen(0, 0); // 清空屏幕
-        printf("游戏进度保存成功\n");
-        system("pause");
-    }
-    else
-    {
-        progressSaveInit( mapOrder ) ;
-        ClearPartialScreen(0, 0); // 清空屏幕
-        printf("已放弃保存游戏进度\n");
-        system("pause");
-    }
-}
-
-void progressSaveInit( int mapOrder )    // 初始化存档信息
-{
-    FILE *savefp = NULL ;
-    savefp = fopen( mapProgressSave[ mapOrder - 1 ] , "w" ) ;
-    if( savefp == NULL )
-    {
-        printf("进度保存文件打开失败！\n") ;
-        return ;
-    }
-    fprintf( savefp , "*") ; // 写入未编辑标志
-    fclose( savefp ) ;
-}
-
-void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder ) // 玩家移动实时模式
+void playerMove(struct playerInfo *player, struct mapInfo *mapInfo) // 玩家移动实时模式
 {
     playerInfoPrint(player, -1);
 
-    /* 游戏运行主体 */
     while (runGame)
     {
         char order = '\0';
         order = getch();
 
-        /* 过滤输入 */
-        // 有效操作：重做，上下左右，休息，退出
+        // 过滤无效输入
         if (order == 'y' || order == 'w' || order == 's' || order == 'a' || order == 'd' || order == 'i' || order == 'q')
         {
-            int coverFlag = 0;  // 用于判断是否覆盖下一次操作（防止新操作后异常重做）
-            if( order == 'w' || order == 's' || order == 'a' || order == 'd' )
-                coverFlag = 1 ;
-
-            if (order == 'y') // 重做操作对order进行处理
+            if (order == 'y')
                 order = moveRedo(player, mapInfo);
-            if (order == 0) // 已经是最新状态则直接进入下一次输入
+            if (order == 0)
                 continue;
 
             int tx = 2 * player->px, ty = player->py;
             int printFlag = playerMoveJudge(player, mapInfo, order);
-            if( coverFlag ) player->moveMemory[player->tt] = 0; // 覆盖下一次操作
-            if (printFlag == -1 ) // 强制退出游戏
+            if (printFlag == -1)
             {
-                // 输出信息
                 ClearPartialScreen(0, 0); // 清空屏幕
                 printf("强制退出，游戏结束！\n\n");
                 infoPrix = 0, infoPriy = 2;
                 exitInfoPrint(player);
-
-                // 确认是否保存游戏进度
-                progressExitSave( player , mapInfo , mapOrder ) ;
                 return;
             }
 
@@ -606,23 +487,16 @@ void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder
             // 打印新的玩家信息
             playerInfoPrint(player, printFlag);
         }
-        // 有效操作：撤销
         else if (order == 'z')
         {
             moveBack(player, mapInfo);
         }
-        // 无效操作
         else
         {
             playerInfoPrint(player, 6);
         }
-
-        // 自动保存游戏进度
-        progressAutoSave(player, mapInfo, player->tt - 1, 0 , mapOrder ) ;
     }
 
-    /* 正常完成游戏结束 */
-    progressSaveInit( mapOrder ) ;
     ClearPartialScreen(0, 0); // 清空屏幕
     printf("您成功找到所有宝藏，游戏结束！\n\n");
     infoPrix = 0, infoPriy = 2;
@@ -630,16 +504,14 @@ void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder
     return;
 }
 
-void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) // 玩家移动编程模式
+void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo) // 玩家移动编程模式
 {
     playerInfoPrint(player, -1);
 
-    /* 游戏运行主体 */
     while (runGame)
     {
-        char orderList[250] = {0}; // 用于存储玩家每次的操作序列
-        /**
-         * 操作序列解释:
+        char orderList[250] = {0}; // 用于存储玩家操作序列
+        /* 操作序列解释:
          * U向上
          * D向下
          * L向左
@@ -647,21 +519,16 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOr
          * 其他操作直接退出
          */
 
-        // 读入操作序列
         printf("请输入你的操作序列：\n");
         scanf("%s", orderList);
         getchar(); // 读取回车
 
         int tp = player->tt, tx = 2 * player->px, ty = player->py;
-        /**
-         * tp: 用于记录操作序列开始前的操作序列长度
-         * tx, ty: 用于记录操作序列开始前的玩家位置
-         */
         int len = strlen(orderList);
-        for (int i = 0; i < len; i++)   // 处理操作序列
+        for (int i = 0; i < len; i++)
         {
             char order = 0;
-            switch (orderList[i])   // 将操作序列转换为实际操作
+            switch (orderList[i])
             {
             case 'U':
                 order = 'w';
@@ -675,21 +542,8 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOr
             case 'R':
                 order = 'd';
                 break;
-            case 'Q':
-            {
-                // 输出信息
-                ClearPartialScreen(0, 0); // 清空屏幕
-                printf("强制退出，游戏结束！\n\n");
-                infoPrix = 0, infoPriy = 2;
-                exitInfoPrint(player);
-
-                // 确认是否保存游戏进度
-                progressExitSave( player , mapInfo , mapOrder ) ;
-                return;
-            }
             default:
             {
-                progressSaveInit( mapOrder ) ;
                 ClearPartialScreen(0, 0); // 清空屏幕
                 printf("编程模式下操作错误，游戏结束！\n\n");
                 infoPrix = 0, infoPriy = 2;
@@ -697,23 +551,21 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOr
                 return;
             }
             }
-
-            // 转换完成，开始判断玩家操作
             int printFlag = playerMoveJudge(player, mapInfo, order);
-            if (printFlag == 1) // 操作错误退出
+
+            if (printFlag == 1)
             {
                 runGame = 0;
 
-                progressSaveInit( mapOrder ) ;
                 ClearPartialScreen(0, 0); // 清空屏幕
                 printf("编程模式下操作错误，游戏结束！\n\n");
                 infoPrix = 0, infoPriy = 2;
                 exitInfoPrint(player);
                 return;
             }
-            if (printFlag == 5) // 完成游戏退出
+
+            if (printFlag == 5)
             {
-                progressSaveInit( mapOrder ) ;
                 ClearPartialScreen(0, 0); // 清空屏幕
                 printf("您成功找到所有宝藏，游戏结束！\n\n");
                 infoPrix = 0, infoPriy = 2;
@@ -736,8 +588,5 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOr
 
         // 打印新的玩家信息
         playerInfoPrint(player, -1);
-
-        // 自动保存游戏进度
-        progressAutoSave(player, mapInfo, player->tt - 1, 1 , mapOrder ) ;
     }
 }
