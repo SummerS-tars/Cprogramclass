@@ -1,5 +1,5 @@
 # Target executable
-TARGET = build/myprogram
+TARGET = build/main
 
 # Source and build directory
 SRC_DIR = src

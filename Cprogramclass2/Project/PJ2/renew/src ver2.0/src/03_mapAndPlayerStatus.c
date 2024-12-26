@@ -1,11 +1,13 @@
+#include "01_menu.h"
+#include "02_cursorOperation.h"
 #include "03_mapAndPlayerStatus.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
-#include "02_cursorOperation.h"
+#include <time.h>
 
-const char moveInfo[7][100] = {
+static const char moveInfo[7][100] = {      // ÓÃÓÚÊä³öµÄÒÆ¶¯ĞÅÏ¢
     {"Æ½Æ½ÎŞÆæµØÔÚ¿ÕµØÉÏ½øĞĞÁËÒÆ¶¯..."},
     {"Äã×°ÉÏÁËÇ½±Ú£¬Á½ÑÛÒ»ºÚ£¡"},
     {"ÄãºİºİµØÔÚÔ­µØĞİÏ¢ÁËÒ»ÏÂ£¬Ê²Ã´Ò²Ã»ÓĞ·¢Éú..."},
@@ -13,10 +15,23 @@ const char moveInfo[7][100] = {
     {"ÄãÖÕÓÚÕÒµ½ÁËÒ»¸ö±¦²Ø£¬¹§Ï²Äã!"},
     {"ÄãÕÒÆëÁËËùÓĞµÄ±¦²Ø£¬¹§Ï²Äã!"},
     {"ÄãµÄ²Ù×÷ÎŞĞ§£¬Ê²Ã´Ò²Ã»ÓĞ·¢Éú..."}};
+char mapName[6][40] = {  // µØÍ¼ÎÄ¼şÃû
+    {"map1.map"}, 
+    {"map2.map"}, 
+    {"map3.map"}, 
+    {"mapCustom1.map"},
+    {"mapCustom2.map"}, 
+    {"mapCustom3.map"}};
+char mapProgressSave[6][40] = { // µØÍ¼½ø¶È±£´æÎÄ¼şÃû
+    {"map1.save"}, 
+    {"map2.save"}, 
+    {"map3.save"}, 
+    {"mapCustom1.save"},
+    {"mapCustom2.save"}, 
+    {"mapCustom3.save"}};
 
-int runGame; // ÓÎÏ·ÔËĞĞ×´Ì¬
-
-static int infoPrix, infoPriy;
+static int infoPrix, infoPriy;  // ÓÃÓÚ´æ´¢ÓÎÏ·ĞÅÏ¢Êä³öÎ»ÖÃ
+static int runGame;         // ÓÎÏ·ÔËĞĞ×´Ì¬:0±íÊ¾½áÊø£¬1±íÊ¾ÔËĞĞ
 
 void mapIni(struct mapInfo *mapInfo) // ³õÊ¼»¯ÃÔ¹¬
 {
@@ -31,29 +46,7 @@ void mapIni(struct mapInfo *mapInfo) // ³õÊ¼»¯ÃÔ¹¬
 int mapInput(struct mapInfo *mapInfo, int mapOrder) // ÊäÈëÃÔ¹¬
 {
     FILE *mapfp = NULL;
-    switch (mapOrder)
-    {
-    case 1:
-        mapfp = fopen("map1.txt", "r");
-        break;
-    case 2:
-        mapfp = fopen("map2.txt", "r");
-        break;
-    case 3:
-        mapfp = fopen("map3.txt", "r");
-        break;
-    case 4:
-        mapfp = fopen("mapCustom1.txt", "r");
-        break;
-    case 5:
-        mapfp = fopen("mapCustom2.txt", "r");
-        break;
-    case 6:
-        mapfp = fopen("mapCustom3.txt", "r");
-        break;
-    default:
-        break;
-    }
+    mapfp = fopen(mapName[mapOrder - 1], "r");
     if (mapfp == NULL)
     {
         printf("µØÍ¼ÎÄ¼ş´ò¿ªÊ§°Ü\n");
@@ -76,11 +69,13 @@ int mapInput(struct mapInfo *mapInfo, int mapOrder) // ÊäÈëÃÔ¹¬
             fseek(mapfp, 0, SEEK_SET);
     }
 
+    /* ¶ÁÈ¡µØÍ¼»ù±¾ĞÅÏ¢ */
     fscanf(mapfp, "%d%d", &mapInfo->mapRow, &mapInfo->mapCol);
     fscanf(mapfp, "%d%d", &mapInfo->treasureNum, &mapInfo->trapNum);
     fscanf(mapfp, "%d%d", &mapInfo->pRow, &mapInfo->pCol);
     fgetc(mapfp); // ¶ÁÈ¡»»ĞĞ·û
 
+    /* ¶ÁÈ¡µØÍ¼±¾ÌåĞÅÏ¢ */
     for (int i = 0; i < mapInfo->mapRow; i++)
     {
         for (int j = 0; j < mapInfo->mapCol; j++)
@@ -128,6 +123,46 @@ void playerIni(struct playerInfo *player, struct mapInfo *mapInfo) // ³õÊ¼»¯Íæ¼Ò
     return;
 }
 
+void progressLoad(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) // ¼ÓÔØ´æµµ
+{
+    FILE *savefp = NULL;
+    savefp = fopen(mapProgressSave[mapOrder - 1], "r");
+    if( savefp == NULL )
+    {
+        printf("½ø¶È±£´æÎÄ¼ş´ò¿ªÊ§°Ü£¡\n") ;
+        return ;
+    }
+
+    /* ¶ÁÈ¡´æµµĞÅÏ¢ */
+    char saveMovement[1000] = {0} ;
+    while( fgetc( savefp ) != '*' ) ;   // ÌøÔ¾ÖÁ²Ù×÷ĞÅÏ¢
+    fscanf( savefp , "%s" , saveMovement ) ; // ¶ÁÈ¡²Ù×÷ĞÅÏ¢
+    fclose( savefp ) ;
+
+    /* ´¦Àí²Ù×÷ĞÅÏ¢ */
+    int len = strlen( saveMovement ) ;
+    for( int i = 0 ; i < len ; i ++ )
+    {
+        char order = saveMovement[i] ;
+        switch (order) // ½«²Ù×÷ĞòÁĞ×ª»»ÎªÊµ¼Ê²Ù×÷
+        {
+        case 'U':
+            order = 'w';
+            break;
+        case 'D':
+            order = 's';
+            break;
+        case 'L':
+            order = 'a';
+            break;
+        case 'R':
+            order = 'd';
+            break;
+        }
+        playerMoveJudge( player , mapInfo , order ) ;
+    }
+}
+
 void playerInfoPrint(struct playerInfo *player, int num) // ´òÓ¡Íæ¼ÒĞÅÏ¢
 {
     // ´òÓ¡Íæ¼ÒÎ»ÖÃ
@@ -147,16 +182,16 @@ void playerInfoPrint(struct playerInfo *player, int num) // ´òÓ¡Íæ¼ÒĞÅÏ¢
         printf("\n");
 
     // ´òÓ¡ĞĞ¶¯ĞÅÏ¢
-    /*
-    ÌØÊâµ÷ÓÃ-1
-    Õı³£ĞĞ¶¯0
-    ×²Ç½1
-    ĞİÏ¢2
-    ´¥·¢ÏİÚå3
-    »ñµÃ±¦²Ø4
-    »ñµÃËùÓĞ±¦²Ø5
-    ÎŞĞ§²Ù×÷6
-    */
+    /**
+     * ÌØÊâµ÷ÓÃ-1
+     * Õı³£ĞĞ¶¯0
+     * ×²Ç½1
+     * ĞİÏ¢2
+     * ´¥·¢ÏİÚå3
+     * »ñµÃ±¦²Ø4
+     * »ñµÃËùÓĞ±¦²Ø5
+     * ÎŞĞ§²Ù×÷6
+     */
     if (num >= 0)
         printf("%s\n", moveInfo[num]);
 
@@ -278,7 +313,7 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
      * ' '¿ÕµØ
      */
 
-    // ÅĞ¶ÏÍæ¼ÒÎ»ÖÃ±ä»¯ºóµÄ×´Ì¬±ä»¯
+    // ÅĞ¶ÏÍæ¼ÒÈç¹û·¢ÉúÎ»ÖÃ±ä»¯ºóµÄ×´Ì¬±ä»¯
     if (moveFlag)
     {
         player->energyCost++;
@@ -326,7 +361,7 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
     }
 }
 
-void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)
+void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)   // ³·Ïú²Ù×÷
 {
     if (player->tt == 0)
     {
@@ -416,7 +451,7 @@ void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)
     return;
 }
 
-char moveRedo(struct playerInfo *player, struct mapInfo *mapInfo)
+char moveRedo(struct playerInfo *player, struct mapInfo *mapInfo)   // ÖØ×ö²Ù×÷
 {
     if (player->moveResult[player->tt] == 0)
     {
@@ -444,31 +479,115 @@ char moveRedo(struct playerInfo *player, struct mapInfo *mapInfo)
     return order;
 }
 
-void playerMove(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ¶¯ÊµÊ±Ä£Ê½
+void saveOperation( struct playerInfo *player , struct mapInfo *mapInfo , int mapOrder )    // ±£´æÓÎÏ·½ø¶È
+{
+    /* ´ò¿ª´æµµÎÄ¼şĞ´Èë */
+    FILE *savefp = NULL ;
+    savefp = fopen( mapProgressSave[ mapOrder - 1 ] , "w" ) ;
+    if( savefp == NULL )
+    {
+        printf("½ø¶È±£´æÎÄ¼ş´ò¿ªÊ§°Ü£¡\n") ;
+        return ;
+    }
+
+    /* Ğ´Èë´æµµĞÅÏ¢ */
+    time_t t = time(NULL);
+    char timeStr[64];
+    strftime( timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localtime(&t) );
+    fprintf( savefp , "%s\n" , timeStr ) ;              // Ğ´Èë±£´æÊ±¼ä
+    fprintf( savefp , "%d %d\n" , player->getTreasure , mapInfo->treasureNum ) ; // Ğ´Èë±¦²ØĞÅÏ¢
+    fprintf( savefp , "*%s\n" , player->moveMemory ) ;// Ğ´ÈëÒÆ¶¯Â·¾¶
+    fprintf( savefp , "]") ; // Ğ´Èë½áÊø±êÖ¾
+
+    // ×¢Òâ£ºÈç¹ûÃ»¹Ø±ÕÎÄ¼ş£¬ÎÄ¼şÖ»ÓĞÔÚ³ÌĞòÍË³öÊ±²Å»á±»±£´æ
+    fclose( savefp ) ;
+}
+
+void progressAutoSave( struct playerInfo *player , struct mapInfo *mapInfo , int steps , int mode , int mapOrder )      // ×Ô¶¯±£´æÓÎÏ·½ø¶È
+{
+    /* ÅĞ¶ÏÊÇ·ñ½øĞĞ×Ô¶¯±£´æ */
+    int saveFlag = 0;   // ±£´æ±êÖ¾
+    if( mode ) saveFlag = 1 ;   // ±à³ÌÄ£Ê½Ä¬ÈÏ±£´æ
+    else if( steps && steps % 10 == 0 ) saveFlag = 1 ;   // ÊµÊ±Ä£Ê½Ã¿10²½±£´æÒ»´Î
+
+    if( !saveFlag ) return ;
+    saveOperation( player , mapInfo , mapOrder ) ;
+}
+
+void progressExitSave( struct playerInfo *player , struct mapInfo *mapInfo , int mapOrder)     // ÍË³ö±£´æÓÎÏ·½ø¶È
+{
+    /* ÅĞ¶ÏÊÇ·ñ½øĞĞ±£´æ²Ù×÷ */
+    ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
+    printf("ÊÇ·ñ±£´æµ±Ç°ÓÎÏ·½ø¶È£¿(y/n)\n");
+    char order = '\0';
+    while( order != 'y' && order != 'n' )
+        order = getch();
+
+    if( order == 'y' )
+    {
+        saveOperation( player , mapInfo , mapOrder ) ;
+        ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
+        printf("ÓÎÏ·½ø¶È±£´æ³É¹¦\n");
+        system("pause");
+    }
+    else
+    {
+        progressSaveInit( mapOrder ) ;
+        ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
+        printf("ÒÑ·ÅÆú±£´æÓÎÏ·½ø¶È\n");
+        system("pause");
+    }
+}
+
+void progressSaveInit( int mapOrder )    // ³õÊ¼»¯´æµµĞÅÏ¢
+{
+    FILE *savefp = NULL ;
+    savefp = fopen( mapProgressSave[ mapOrder - 1 ] , "w" ) ;
+    if( savefp == NULL )
+    {
+        printf("½ø¶È±£´æÎÄ¼ş´ò¿ªÊ§°Ü£¡\n") ;
+        return ;
+    }
+    fprintf( savefp , "*") ; // Ğ´ÈëÎ´±à¼­±êÖ¾
+    fclose( savefp ) ;
+}
+
+void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder ) // Íæ¼ÒÒÆ¶¯ÊµÊ±Ä£Ê½
 {
     playerInfoPrint(player, -1);
 
+    /* ÓÎÏ·ÔËĞĞÖ÷Ìå */
     while (runGame)
     {
         char order = '\0';
         order = getch();
 
-        // ¹ıÂËÎŞĞ§ÊäÈë
+        /* ¹ıÂËÊäÈë */
+        // ÓĞĞ§²Ù×÷£ºÖØ×ö£¬ÉÏÏÂ×óÓÒ£¬ĞİÏ¢£¬ÍË³ö
         if (order == 'y' || order == 'w' || order == 's' || order == 'a' || order == 'd' || order == 'i' || order == 'q')
         {
-            if (order == 'y')
+            int coverFlag = 0;  // ÓÃÓÚÅĞ¶ÏÊÇ·ñ¸²¸ÇÏÂÒ»´Î²Ù×÷£¨·ÀÖ¹ĞÂ²Ù×÷ºóÒì³£ÖØ×ö£©
+            if( order == 'w' || order == 's' || order == 'a' || order == 'd' )
+                coverFlag = 1 ;
+
+            if (order == 'y') // ÖØ×ö²Ù×÷¶Ôorder½øĞĞ´¦Àí
                 order = moveRedo(player, mapInfo);
-            if (order == 0)
+            if (order == 0) // ÒÑ¾­ÊÇ×îĞÂ×´Ì¬ÔòÖ±½Ó½øÈëÏÂÒ»´ÎÊäÈë
                 continue;
 
             int tx = 2 * player->px, ty = player->py;
             int printFlag = playerMoveJudge(player, mapInfo, order);
-            if (printFlag == -1)
+            if( coverFlag ) player->moveMemory[player->tt] = 0; // ¸²¸ÇÏÂÒ»´Î²Ù×÷
+            if (printFlag == -1 ) // Ç¿ÖÆÍË³öÓÎÏ·
             {
+                // Êä³öĞÅÏ¢
                 ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
                 printf("Ç¿ÖÆÍË³ö£¬ÓÎÏ·½áÊø£¡\n\n");
                 infoPrix = 0, infoPriy = 2;
                 exitInfoPrint(player);
+
+                // È·ÈÏÊÇ·ñ±£´æÓÎÏ·½ø¶È
+                progressExitSave( player , mapInfo , mapOrder ) ;
                 return;
             }
 
@@ -487,16 +606,23 @@ void playerMove(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ¶¯Ê
             // ´òÓ¡ĞÂµÄÍæ¼ÒĞÅÏ¢
             playerInfoPrint(player, printFlag);
         }
+        // ÓĞĞ§²Ù×÷£º³·Ïú
         else if (order == 'z')
         {
             moveBack(player, mapInfo);
         }
+        // ÎŞĞ§²Ù×÷
         else
         {
             playerInfoPrint(player, 6);
         }
+
+        // ×Ô¶¯±£´æÓÎÏ·½ø¶È
+        progressAutoSave(player, mapInfo, player->tt - 1, 0 , mapOrder ) ;
     }
 
+    /* Õı³£Íê³ÉÓÎÏ·½áÊø */
+    progressSaveInit( mapOrder ) ;
     ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
     printf("Äú³É¹¦ÕÒµ½ËùÓĞ±¦²Ø£¬ÓÎÏ·½áÊø£¡\n\n");
     infoPrix = 0, infoPriy = 2;
@@ -504,14 +630,16 @@ void playerMove(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ¶¯Ê
     return;
 }
 
-void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ¶¯±à³ÌÄ£Ê½
+void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) // Íæ¼ÒÒÆ¶¯±à³ÌÄ£Ê½
 {
     playerInfoPrint(player, -1);
 
+    /* ÓÎÏ·ÔËĞĞÖ÷Ìå */
     while (runGame)
     {
-        char orderList[250] = {0}; // ÓÃÓÚ´æ´¢Íæ¼Ò²Ù×÷ĞòÁĞ
-        /* ²Ù×÷ĞòÁĞ½âÊÍ:
+        char orderList[250] = {0}; // ÓÃÓÚ´æ´¢Íæ¼ÒÃ¿´ÎµÄ²Ù×÷ĞòÁĞ
+        /**
+         * ²Ù×÷ĞòÁĞ½âÊÍ:
          * UÏòÉÏ
          * DÏòÏÂ
          * LÏò×ó
@@ -519,16 +647,21 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ
          * ÆäËû²Ù×÷Ö±½ÓÍË³ö
          */
 
+        // ¶ÁÈë²Ù×÷ĞòÁĞ
         printf("ÇëÊäÈëÄãµÄ²Ù×÷ĞòÁĞ£º\n");
         scanf("%s", orderList);
         getchar(); // ¶ÁÈ¡»Ø³µ
 
         int tp = player->tt, tx = 2 * player->px, ty = player->py;
+        /**
+         * tp: ÓÃÓÚ¼ÇÂ¼²Ù×÷ĞòÁĞ¿ªÊ¼Ç°µÄ²Ù×÷ĞòÁĞ³¤¶È
+         * tx, ty: ÓÃÓÚ¼ÇÂ¼²Ù×÷ĞòÁĞ¿ªÊ¼Ç°µÄÍæ¼ÒÎ»ÖÃ
+         */
         int len = strlen(orderList);
-        for (int i = 0; i < len; i++)
+        for (int i = 0; i < len; i++)   // ´¦Àí²Ù×÷ĞòÁĞ
         {
             char order = 0;
-            switch (orderList[i])
+            switch (orderList[i])   // ½«²Ù×÷ĞòÁĞ×ª»»ÎªÊµ¼Ê²Ù×÷
             {
             case 'U':
                 order = 'w';
@@ -542,8 +675,21 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ
             case 'R':
                 order = 'd';
                 break;
+            case 'Q':
+            {
+                // Êä³öĞÅÏ¢
+                ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
+                printf("Ç¿ÖÆÍË³ö£¬ÓÎÏ·½áÊø£¡\n\n");
+                infoPrix = 0, infoPriy = 2;
+                exitInfoPrint(player);
+
+                // È·ÈÏÊÇ·ñ±£´æÓÎÏ·½ø¶È
+                progressExitSave( player , mapInfo , mapOrder ) ;
+                return;
+            }
             default:
             {
+                progressSaveInit( mapOrder ) ;
                 ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
                 printf("±à³ÌÄ£Ê½ÏÂ²Ù×÷´íÎó£¬ÓÎÏ·½áÊø£¡\n\n");
                 infoPrix = 0, infoPriy = 2;
@@ -551,21 +697,23 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ
                 return;
             }
             }
-            int printFlag = playerMoveJudge(player, mapInfo, order);
 
-            if (printFlag == 1)
+            // ×ª»»Íê³É£¬¿ªÊ¼ÅĞ¶ÏÍæ¼Ò²Ù×÷
+            int printFlag = playerMoveJudge(player, mapInfo, order);
+            if (printFlag == 1) // ²Ù×÷´íÎóÍË³ö
             {
                 runGame = 0;
 
+                progressSaveInit( mapOrder ) ;
                 ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
                 printf("±à³ÌÄ£Ê½ÏÂ²Ù×÷´íÎó£¬ÓÎÏ·½áÊø£¡\n\n");
                 infoPrix = 0, infoPriy = 2;
                 exitInfoPrint(player);
                 return;
             }
-
-            if (printFlag == 5)
+            if (printFlag == 5) // Íê³ÉÓÎÏ·ÍË³ö
             {
+                progressSaveInit( mapOrder ) ;
                 ClearPartialScreen(0, 0); // Çå¿ÕÆÁÄ»
                 printf("Äú³É¹¦ÕÒµ½ËùÓĞ±¦²Ø£¬ÓÎÏ·½áÊø£¡\n\n");
                 infoPrix = 0, infoPriy = 2;
@@ -588,5 +736,8 @@ void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo) // Íæ¼ÒÒÆ
 
         // ´òÓ¡ĞÂµÄÍæ¼ÒĞÅÏ¢
         playerInfoPrint(player, -1);
+
+        // ×Ô¶¯±£´æÓÎÏ·½ø¶È
+        progressAutoSave(player, mapInfo, player->tt - 1, 1 , mapOrder ) ;
     }
 }
