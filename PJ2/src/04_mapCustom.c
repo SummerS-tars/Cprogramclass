@@ -1,7 +1,6 @@
 #include "04_mapCustom.h"
 #include "02_cursorOperation.h"
 #include "03_mapAndPlayerStatus.h"
-#include "01_menu.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

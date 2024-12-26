@@ -34,4 +34,4 @@ clear the screen -> cursor operation clear and reprint
 
 1. menu struct renew  
    1. menu status fresh  
-   2. 
+   2. menu print fresh

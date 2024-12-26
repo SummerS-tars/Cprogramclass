@@ -1,4 +1,3 @@
-#include "01_menu.h"
 #include "02_cursorOperation.h"
 #include "03_mapAndPlayerStatus.h"
 #include <stdio.h>
@@ -15,20 +14,20 @@ static const char moveInfo[7][100] = {      // 用于输出的移动信息
     {"你终于找到了一个宝藏，恭喜你!"},
     {"你找齐了所有的宝藏，恭喜你!"},
     {"你的操作无效，什么也没有发生..."}};
-extern char mapName[6][40] = {  // 地图文件名
-    {"map1.map"}, 
-    {"map2.map"}, 
-    {"map3.map"}, 
-    {"mapCustom1.map"},
-    {"mapCustom2.map"}, 
-    {"mapCustom3.map"}};
-extern char mapProgressSave[6][40] = { // 地图进度保存文件名
-    {"map1.save"}, 
-    {"map2.save"}, 
-    {"map3.save"}, 
-    {"mapCustom1.save"},
-    {"mapCustom2.save"}, 
-    {"mapCustom3.save"}};
+char mapName[6][40] = {  // 地图文件名
+    {"map/map1.map"}, 
+    {"map/map2.map"}, 
+    {"map/map3.map"}, 
+    {"map/mapCustom1.map"},
+    {"map/mapCustom2.map"}, 
+    {"map/mapCustom3.map"}};
+char mapProgressSave[6][40] = { // 地图进度保存文件名
+    {"save/map1.save"}, 
+    {"save/map2.save"}, 
+    {"save/map3.save"}, 
+    {"save/mapCustom1.save"},
+    {"save/mapCustom2.save"}, 
+    {"save/mapCustom3.save"}};
 
 static int infoPrix, infoPriy;  // 用于存储游戏信息输出位置
 static int runGame;         // 游戏运行状态:0表示结束，1表示运行
@@ -359,6 +358,7 @@ int playerMoveJudge(struct playerInfo *player, struct mapInfo *mapInfo, char ord
             return 0;
         }
     }
+    return 2;
 }
 
 void moveBack(struct playerInfo *player, struct mapInfo *mapInfo)   // 撤销操作

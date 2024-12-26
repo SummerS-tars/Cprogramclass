@@ -1,20 +1,16 @@
 #include "04_mapCustom.h"
 #include "02_cursorOperation.h"
 #include "03_mapAndPlayerStatus.h"
+#include "01_menu.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
 
-void mapCustomIni( int mapnum , int priInfo )    // 初始化随机迷宫
+void mapCustomIni( int customMapNum , int priInfo )    // 初始化随机迷宫
 {
     FILE *mapfp = NULL ;
-    switch( mapnum )
-    {
-        case 1: mapfp = fopen("mapCustom1.txt", "w"); break;
-        case 2: mapfp = fopen("mapCustom2.txt", "w"); break;
-        case 3: mapfp = fopen("mapCustom3.txt", "w"); break;
-    }
+    mapfp = fopen( mapName[ customMapNum + 2 ] , "w" ) ;
     if( mapfp != NULL )
     {
         fputc('*', mapfp);
@@ -34,10 +30,11 @@ void mapCustomIni( int mapnum , int priInfo )    // 初始化随机迷宫
     system("pause");
     }
 
+    progressSaveInit( customMapNum + 3 ) ; // 同时初始化游戏存档
     return ;
 }
 
-void mapCustomEdit( int mapnum )   // 编辑随机迷宫
+void mapCustomEdit( int customMapNum )   // 编辑随机迷宫
 {
     ClearPartialScreen(0, 0);
     struct mapInfo mapInfo;
@@ -129,12 +126,7 @@ void mapCustomEdit( int mapnum )   // 编辑随机迷宫
   
     // 保存地图信息
     FILE *mapfp = NULL ;
-    switch( mapnum )
-    {
-        case 1: mapfp = fopen("mapCustom1.txt", "w"); break;
-        case 2: mapfp = fopen("mapCustom2.txt", "w"); break;
-        case 3: mapfp = fopen("mapCustom3.txt", "w"); break;
-    }
+    mapfp = fopen( mapName[ customMapNum + 2 ] , "w" ) ;
     if( mapfp == NULL )
     {
         perror("Error opening file");
@@ -143,7 +135,7 @@ void mapCustomEdit( int mapnum )   // 编辑随机迷宫
 
     fprintf(mapfp, "%d %d\n", mapInfo.mapRow, mapInfo.mapCol);
     fprintf(mapfp, "%d %d\n", mapInfo.treasureNum, mapInfo.trapNum);
-    fprintf(mapfp, "%d %d\n", mapInfo.pRow, mapInfo.pCol);
+    fprintf(mapfp, "%d %d\n", mapInfo.pCol, mapInfo.pRow );
     for( int i = 0 ; i < mapInfo.mapRow ; i ++ )
     {
         for( int j = 0 ; j < mapInfo.mapCol ; j ++ )

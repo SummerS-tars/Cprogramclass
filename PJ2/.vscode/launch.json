@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "d:/Programing/Code/Cprogramclass/Cprogramclass2/Project/PJ2/renew/test",
-      "program": "d:/Programing/Code/Cprogramclass/Cprogramclass2/Project/PJ2/renew/test/build/Debug/outDebug",
+      "cwd": "d:/Programing/Code/Cprogramclass/Cprogramclass2/Project/PJ2/renew/menuUpdate",
+      "program": "d:/Programing/Code/Cprogramclass/Cprogramclass2/Project/PJ2/renew/menuUpdate/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
