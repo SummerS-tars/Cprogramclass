@@ -1,0 +1,7 @@
+#ifndef MAPCUSTOM_H
+#define MAPCUSTOM_H
+
+extern void mapCustomIni( int customMapOrder , int priInfo );    // ?????????¨²????
+extern void mapCustomEdit( int customMapOrder , int loadFlag);   // ???????¨²????
+
+#endif // MAPCUSTOM_H

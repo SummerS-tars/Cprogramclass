@@ -42,37 +42,31 @@ void mapIni(struct mapInfo *mapInfo) // 初始化迷宫
     return;
 }
 
-// 输入迷宫
-// mapOrder: 1-3为默认地图，4-6为自定义地图
-int mapInput(struct mapInfo *mapInfo, int mapOrder) 
+int mapInput(struct mapInfo *mapInfo, int mapOrder) // 输入迷宫
 {
     FILE *mapfp = NULL;
     mapfp = fopen(mapName[mapOrder - 1], "r");
     if (mapfp == NULL)
     {
         printf("地图文件打开失败\n");
-        system("pause");
         return 0;
     }
 
-    /**
-     * 菜单更新后未编辑地图无法进行游玩
-     *  // 判断自定义地图是否编辑
-        if (mapOrder >= 4)
+    // 判断自定义地图是否编辑
+    if (mapOrder >= 4)
+    {
+        char isEdit = 0;
+        fscanf(mapfp, "%c", &isEdit);
+        if (isEdit == '*')
         {
-            char isEdit = 0;
-            fscanf(mapfp, "%c", &isEdit);
-            if (isEdit == '*')
-            {
-                ClearPartialScreen(0, 0); // 清空屏幕
-                printf("地图还未编辑，请先编辑地图之后再进行游玩！\n");
-                system("pause");
-                return 0;
-            }
-            else
-                fseek(mapfp, 0, SEEK_SET);
+            ClearPartialScreen(0, 0); // 清空屏幕
+            printf("地图还未编辑，请先编辑地图之后再进行游玩！\n");
+            system("pause");
+            return 0;
         }
-     */
+        else
+            fseek(mapfp, 0, SEEK_SET);
+    }
 
     /* 读取地图基本信息 */
     fscanf(mapfp, "%d%d", &mapInfo->mapRow, &mapInfo->mapCol);
@@ -116,8 +110,8 @@ void mapPrint(struct mapInfo *mapInfo) // 打印迷宫
 void playerIni(struct playerInfo *player, struct mapInfo *mapInfo) // 初始化玩家信息
 {
     runGame = 1;
-    player->px = mapInfo->pCol; // TODO:BUG9修复记录，调整玩家位置初始化，将行列位置调换
-    player->py = mapInfo->pRow;
+    player->px = mapInfo->pRow;
+    player->py = mapInfo->pCol;
     player->energyCost = 0;
     player->getTreasure = 0;
     player->isTrapped = 0;
@@ -128,9 +122,7 @@ void playerIni(struct playerInfo *player, struct mapInfo *mapInfo) // 初始化玩家
     return;
 }
 
-// 加载存档
-// mapOrder: 1-3为默认地图，4-6为自定义地图
-void progressLoad(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) 
+void progressLoad(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) // 加载存档
 {
     FILE *savefp = NULL;
     savefp = fopen(mapProgressSave[mapOrder - 1], "r");
@@ -170,9 +162,7 @@ void progressLoad(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrd
     }
 }
 
-// 打印玩家信息
-// num: 0-正常行动，1-撞墙，2-休息，3-触发陷阱，4-获得宝藏，5-获得所有宝藏，6-无效操作
-void playerInfoPrint(struct playerInfo *player, int num) 
+void playerInfoPrint(struct playerInfo *player, int num) // 打印玩家信息
 {
     // 打印玩家位置
     MoveCursorTo(2 * player->px, player->py);
@@ -549,9 +539,7 @@ void progressExitSave( struct playerInfo *player , struct mapInfo *mapInfo , int
     }
 }
 
-// 初始化存档信息
-// mapOrder: 1-3为默认地图，4-6为自定义地图
-void progressSaveInit( int mapOrder )    
+void progressSaveInit( int mapOrder )    // 初始化存档信息
 {
     FILE *savefp = NULL ;
     savefp = fopen( mapProgressSave[ mapOrder - 1 ] , "w" ) ;
@@ -564,8 +552,7 @@ void progressSaveInit( int mapOrder )
     fclose( savefp ) ;
 }
 
-// 玩家移动实时模式
-void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder ) 
+void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder ) // 玩家移动实时模式
 {
     playerInfoPrint(player, -1);
 
@@ -643,8 +630,7 @@ void playerMove(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder
     return;
 }
 
-// 玩家移动编程模式
-void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) 
+void playerMovePro(struct playerInfo *player, struct mapInfo *mapInfo, int mapOrder) // 玩家移动编程模式
 {
     playerInfoPrint(player, -1);
 
