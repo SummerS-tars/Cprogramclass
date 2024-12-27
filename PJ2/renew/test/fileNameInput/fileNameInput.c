@@ -1,56 +1,99 @@
-#include <stdio.h>      // 标准输入输出库
-#include <stdlib.h>     // 标准库，包含了malloc, free, exit等函数
-#include <dirent.h>     // 目录操作库，包含了DIR, opendir, readdir, closedir等函数
-#include <sys/stat.h>   // 文件状态库，包含了stat, struct stat等函数
-#include <string.h>     // 字符串操作库，包含了strrchr等函数
+#include <stdio.h>
+#include <stdlib.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <string.h>
 
-// 列出指定路径下的所有文件
-void listFiles(const char *path) {
-    struct dirent *entry;  // 用于存储目录项信息
-    DIR *dp = opendir(path);  // 打开目录
+char mapName[10][64];
+char mapProgressSave[10][64];
+static int mapNumbers;
 
-    if (dp == NULL) {  // 如果目录打开失败
-        perror("opendir");  // 输出错误信息
+void mapNameGet() 
+{
+    memset(mapName, 0, sizeof(mapName));
+    memset(mapProgressSave, 0, sizeof(mapProgressSave));
+    mapNumbers = 0;
+
+    char *mapPath = "./map";
+    char *progressPath = "./save";
+    struct dirent *entry;
+
+    DIR *dp = opendir(mapPath);
+    if (dp == NULL) {
+        perror("opendir");
         return;
     }
 
-    int fileCount = 0;  // 文件计数器
-    printf("Files in directory %s:\n", path);
-    while ((entry = readdir(dp))) {  // 读取目录中的每一项
-        char fullPath[1024];  // 存储文件的完整路径
-        snprintf(fullPath, sizeof(fullPath), "%s/%s", path, entry->d_name);  // 生成完整路径
-        struct stat fileStat;  // 用于存储文件状态信息
-        if (stat(fullPath, &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {  // 检查文件状态，确保是常规文件
-            char *dot = strrchr(entry->d_name, '.');  // 查找文件名中的最后一个点
+    int fileCount = 0;
+    while ( entry = readdir(dp) ) {
+        char fullPath[1024];
+        snprintf(fullPath, sizeof(fullPath), "%s/%s", mapPath , entry->d_name);
+        struct stat fileStat;
+        if (stat(fullPath, &fileStat) == 0 && S_ISREG(fileStat.st_mode)) {
+            char *dot = strrchr(entry->d_name, '.');
             if (dot) {
-                *dot = '\0';  // 去掉文件名中的后缀
+                *dot = '\0';
             }
-            printf("%s\n", entry->d_name);  // 输出文件名
-            fileCount++;  // 文件计数器加1
+            snprintf(mapName[fileCount], sizeof(mapName[fileCount]), "./map/%s.map", entry->d_name);
+            snprintf(mapProgressSave[fileCount], sizeof(mapProgressSave[fileCount]), "./save/%s.save", entry->d_name);
+
+            printf("%s\n", entry->d_name);
+            fileCount++;
         }
     }
 
-    closedir(dp);  // 关闭目录
-    printf("Total number of files: %d\n", fileCount);  // 输出文件总数
+    closedir(dp);
+    mapNumbers = fileCount;
 }
 
-// 更改文件名
-void renameFile(const char *oldName, const char *newName) {
-    if (rename(oldName, newName) == 0) {
-        printf("File renamed successfully from %s to %s\n", oldName, newName);
+void mapNameChange( int mapOrder )
+{
+    mapOrder--;
+    char oldMapPath[64] = {0};
+    char oldProgressSavePath[64] = {0};
+    char newMapPath[64] = {0};
+    char newProgressSavePath[64] = {0};
+
+    snprintf(oldMapPath, sizeof(oldMapPath), "%s", mapName[mapOrder]);
+    snprintf(oldProgressSavePath, sizeof(oldProgressSavePath), "%s", mapProgressSave[mapOrder]);
+
+    printf("当前地图名称: %s\n", oldMapPath);
+    printf("当前进度保存名称: %s\n", oldProgressSavePath);
+
+    char newMapName[40] = {0};
+    printf("请输入新的地图名称: ");
+    scanf("%39s", newMapName);
+    
+    snprintf(newMapPath, sizeof(newMapPath), "./map/%s.map", newMapName);
+    snprintf(newProgressSavePath, sizeof(newProgressSavePath), "./save/%s.save", newMapName );
+
+    for (int i = 0; i < mapNumbers; i++) {
+        if (strcmp(mapName[i], newMapPath) == 0) {
+            printf("地图名称已存在，请输入不同的名称。\n");
+            return;
+        }
+    }
+
+    if (rename(oldMapPath, newMapPath) == 0) {
+        snprintf(mapName[mapOrder], sizeof(mapName[mapOrder]), "%s", newMapPath);
+        printf("地图名称已更改为: %s\n", newMapPath);
     } else {
-        perror("rename");
+        perror("地图名称更改失败");
+    }
+
+    if (rename(oldProgressSavePath, newProgressSavePath) == 0) {
+        snprintf(mapProgressSave[mapOrder], sizeof(mapProgressSave[mapOrder]), "%s", newProgressSavePath);
+        printf("进度保存名称已更改为: %s\n", newProgressSavePath);
+    } else {
+        perror("进度保存名称更改失败");
     }
 }
 
 int main() {
-    const char *path = "./map"; // 替换为你的目录路径
-    listFiles(path);  // 列出指定路径下的所有文件
 
-    // 示例：更改文件名
-    const char *oldName = "./map/oldfile.txt"; // 替换为旧文件名
-    const char *newName = "./map/newfile.txt"; // 替换为新文件名
-    renameFile(oldName, newName);
+    mapNameGet();
+
+    mapNameChange(1);
 
     return 0;
 }
