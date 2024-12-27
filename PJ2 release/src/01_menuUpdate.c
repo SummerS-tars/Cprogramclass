@@ -231,6 +231,7 @@ static void mapNewCreate()
     fclose(saveFile);
 
     // 初始化
+    mapNumbers ++ ;
     mapCustomIni( mapNumbers , 0 ); // 初始化地图
     progressSaveInit( mapNumbers ) ;    // 初始化存档
     mapNameGet();   // 更新地图名称
