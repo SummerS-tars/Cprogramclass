@@ -15,6 +15,9 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 CC = gcc
 CFLAGS = -Wall -g
 
+# default target
+all: $(TARGET) clean
+
 # Link object files to create the executable
 $(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
@@ -25,7 +28,6 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean the build directory
+.PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)/*.o $(TARGET)
-
-.PHONY: all clean
+	rm -rf $(BUILD_DIR)/*.o

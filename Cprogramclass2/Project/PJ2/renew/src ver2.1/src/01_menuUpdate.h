@@ -8,8 +8,7 @@ typedef enum _MENU{   // 菜单枚举
     CUSTOM_MAP_MENU,
     CUSTOM_OPERATION_MENU,
     SAVE_LOAD_MENU,
-    CONTROL_MODE_MENU,
-    EDIT_PROGRESS_MENU
+    CONTROL_MODE_MENU
 } MENU;
 
 extern void runMenu() ;    // 菜单运行控制主函数

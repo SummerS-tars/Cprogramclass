@@ -24,7 +24,7 @@ void mapCustomIni( int customMapNum , int priInfo )    // 初始化随机迷宫
 
     if( priInfo )
     {
-    ClearPartialScreen(0,0) ;
+    system("cls") ;
     printf("初始化成功！\n");
     system("pause");
     }
@@ -35,7 +35,7 @@ void mapCustomIni( int customMapNum , int priInfo )    // 初始化随机迷宫
 
 void mapCustomEdit( int customMapNum )   // 编辑随机迷宫
 {
-    ClearPartialScreen(0, 0);
+    system("cls");
     struct mapInfo mapInfo;
     mapIni( &mapInfo );
     printf("请输入迷宫的行数：\n");
@@ -46,7 +46,7 @@ void mapCustomEdit( int customMapNum )   // 编辑随机迷宫
     scanf("%d", &mapInfo.treasureNum);
     printf("请输入迷宫的陷阱数量：\n");
     scanf("%d", &mapInfo.trapNum);
-    ClearPartialScreen(0, 0);
+    system("cls");
 
     for( int i = 0 ; i < mapInfo.mapRow ; i ++ )    // 默认初始化迷宫
     {

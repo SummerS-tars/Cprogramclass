@@ -5,7 +5,7 @@
 #include "01_menuUpdate.h"
 #include "02_cursorOperation.h"
 #include "03_mapAndPlayerStatus.h"
-#include "04_mapCustomUpdate.h"
+#include "04_mapCustom.h"
 
 /* 菜单列表 */
 static char mainMenuList[][40] = { // 主菜单列表
@@ -42,10 +42,6 @@ static char controlModeMenuList[][40] = { // 控制模式菜单列表
     {"编程模式"},
     {"获取帮助"},
     {"返回"}};
-static char editProgressMenuList[][40] = { // 编辑进度菜单列表
-    {"继续编辑"},
-    {"开始新地图"},
-    {"返回"}};
 char (*menuList[])[40] = {  // 菜单列表
     mainMenuList,
     mapTypeMenuList,
@@ -53,8 +49,7 @@ char (*menuList[])[40] = {  // 菜单列表
     customMapMenuList,
     customOperationMenuList,
     saveLoadMenuList,
-    controlModeMenuList,
-    editProgressMenuList};
+    controlModeMenuList};
 
 static void mainMenu( MENU *pmenu ) ;                // 主菜单函数
 static void mapTypeMenu( MENU *pmenu ) ;             // 地图类型选择菜单函数
@@ -63,7 +58,6 @@ static void customMapMenu( MENU *pmenu ) ;           // 自定义地图菜单函数
 static void customOperationMenu( int mapOrder ) ;             // 自定义地图操作菜单函数
 static int saveLoadMenu( int mapOrder ) ;                    // 存档读取菜单函数
 static int controlModeMenu() ;                 // 控制模式菜单函数
-static int editProgressMenu() ;                // 编辑进度菜单函数
 static int listNumCount( MENU menu ) ;       // 计算菜单选项数量
 static void printMenu( MENU menu , int num ) ;                 // 打印菜单
 static int cursorChoose( COORD loc , int num ) ;                  // 菜单光标移动控制
@@ -127,8 +121,6 @@ static int listNumCount( MENU menu )
             return sizeof( saveLoadMenuList ) / sizeof( saveLoadMenuList[0] ) ;
         case CONTROL_MODE_MENU:
             return sizeof( controlModeMenuList ) / sizeof( controlModeMenuList[0] ) ;
-        case EDIT_PROGRESS_MENU:
-            return sizeof( editProgressMenuList ) / sizeof( editProgressMenuList[0] ) ;
     }
     return -1 ;
 }
@@ -323,24 +315,17 @@ static void defaultMapStatus( int defaultMapOrder , int *status )
 }
 
 // 自定义地图状态获取函数
-// status: 0-未编辑，1-已编辑，2-未游玩，3-编辑未完成
 static void customMapStatus( int customMapOrder , int *status )
 {
-    enum { EDITED_NOT_SAVED = 0 , EDITED_SAVED = 1 , UNEDITED = 2 , EDITED_UNFINISHED = 3 } ;
+    enum { EDITED_NOT_SAVED = 0 , EDITED_SAVED = 1 , UNEDITED = 2 } ;
     FILE *mapfp = NULL ;
     mapfp = fopen( mapName[ customMapOrder + 2 ] , "r" ) ;
-    char editFlag = 0 , finishFlag = 0 ;
+    char editFlag = 0 ;
     editFlag = fgetc( mapfp ) ;
-    fseek( mapfp , -1L , SEEK_END ) ;
-    finishFlag = fgetc( mapfp ) ;
     fclose( mapfp ) ;
     if( editFlag == '*' )  // 未编辑
     {
         *status = UNEDITED ;
-    }
-    else if( finishFlag == ']' ) // 已编辑但未完成
-    {
-        *status = EDITED_UNFINISHED ;
     }
     else // 已编辑
     {
@@ -372,25 +357,24 @@ static void customOperationMenu( int customMapOrder )
     int x = 0 , y = 0 ;
 
     /* 菜单信息打印与存储 */
-    enum { EDITED_NOT_SAVED = 0 , EDITED_SAVED = 1 , UNEDITED = 2 , EDITED_UNFINISHED } STATUS ;
+    enum { EDITED_NOT_SAVED = 0 , EDITED_SAVED = 1 , UNEDITED = 2 } STATUS ;
     char mapName[][20] = { "自定义地图一" , "自定义地图二" , "自定义地图三" } ;
-    char addStatus[][20] = { "(已编辑)" , "(已游玩)" , "(未编辑)" , "(编辑未完成)" } ;
+    char addStatus[][20] = { "(已编辑)" , "(已游玩)" , "(未编辑)" } ;
     STATUS = getMapStatus( customMapOrder + 3 ) ;
     
     printf("选中：%s\n状态：%s\n\n" , mapName[ customMapOrder - 1 ] , addStatus[ STATUS ] ) ;
     GetCursorPosition( &x , &y ) , loc.X = x , loc.Y = y ;
-    int printFlag = STATUS == UNEDITED || STATUS == EDITED_UNFINISHED ; // 为1时不显示开始游玩选项
-    for( int i = ( printFlag ? 1 : 0) ; i < listNum ; i ++ ) // 未编辑状态下不显示开始游玩选项   // TODO:BUG12修复，已编辑未完成状态检测补充
+    for( int i = (STATUS == UNEDITED ? 1 : 0) ; i < listNum ; i ++ ) // 未编辑状态下不显示开始游玩选项
     {
         printf("   ") ;
         printf( "%s\n" , menuList[ CUSTOM_OPERATION_MENU ][ i ] ) ;
     }
-    if( printFlag ) listNum -- ;
+    if( STATUS == UNEDITED ) listNum -- ;
     printf("\n<w>上移光标,<s>下移光标,<Enter>选中\n");
 
     /* 获取菜单选中结果 */
     int op = cursorChoose( loc , listNum ) ;
-    if( printFlag ) op ++ ;
+    if( STATUS == UNEDITED ) op ++ ;
 
     /* 菜单选项处理 */
     switch( op )
@@ -398,24 +382,8 @@ static void customOperationMenu( int customMapOrder )
         case 0:     // 开始游玩
             startGame( customMapOrder + 3 ) ;
             break;
-        case 1:     // 开始编辑  // TODO:测试
-            if( STATUS == UNEDITED ) mapCustomEdit( customMapOrder , 0 ) ;
-            else
-            {
-                int progressOrder = editProgressMenu() ;
-                progressSaveInit( customMapOrder + 2 ) ; // 重新编辑时初始化存档
-                switch( progressOrder )
-                {
-                    case 0: // 继续编辑
-                        mapCustomEdit( customMapOrder , 1 ) ;
-                        break;
-                    case 1: // 开始新地图
-                        mapCustomEdit( customMapOrder , 0 ) ;
-                        break;
-                    case 2: // 返回
-                        break;
-                }
-            }
+        case 1:     // 开始编辑
+            mapCustomEdit( customMapOrder ) ;
             break;
         case 2:     // 重置地图
             mapCustomIni( customMapOrder , 1 ) ;
@@ -423,26 +391,6 @@ static void customOperationMenu( int customMapOrder )
         case 3:     // 返回自定义菜单
             break;
     }
-}
-
-// 编辑进度菜单函数
-static int editProgressMenu()
-{
-    system("cls");
-    int listNum = listNumCount( EDIT_PROGRESS_MENU ) ;
-    COORD loc = { 0 , 0 } ;     // 菜单光标位置
-    int x = 0 , y = 0 ;
-
-    /* 菜单信息打印与存储 */
-    printf("此地图已经经过编辑过，选择你要进行的操作\n\n") ;
-    GetCursorPosition( &x , &y ) , loc.X = x , loc.Y = y ;
-    printMenu( EDIT_PROGRESS_MENU , listNum ) ;
-
-    /* 获取菜单选中结果 */
-    int op = cursorChoose( loc , listNum ) ;
-
-    /* 菜单选项处理 */
-    return op ;
 }
 
 // 存档读取菜单函数
@@ -484,7 +432,6 @@ static int controlModeMenu()
     int x = 0 , y = 0 ;
 
     /* 菜单信息打印与存储 */
-    printf("选择你要使用的控制模式\n\n") ;
     GetCursorPosition( &x , &y ) , loc.X = x , loc.Y = y ;
     printMenu( CONTROL_MODE_MENU , listNum ) ;
 
