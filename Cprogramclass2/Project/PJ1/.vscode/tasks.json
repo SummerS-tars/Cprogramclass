@@ -1,0 +1,27 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "${workspaceFolder}/src/00_main.c",
+                "${workspaceFolder}/src/01_menu.c",
+                "${workspaceFolder}/src/02_cursorOperation.c",
+                "${workspaceFolder}/src/03_mapAndPlayerStatus.c",
+                "${workspaceFolder}/src/04_mapCustom.c",
+                "-o",
+                "${workspaceFolder}/build/00_main.exe",
+                "-fdiagnostics-color=always",
+                "-g"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Generated task to compile multiple C files"
+        }
+    ]
+}
