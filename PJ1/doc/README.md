@@ -1,5 +1,17 @@
 # README
 
+- [1. 背景介绍](#1-背景介绍)
+- [2. 完成部分](#2-完成部分)
+- [3. 使用说明](#3-使用说明)
+- [4. 结构说明](#4-结构说明)
+   - [4.1. main](#41-main)
+   - [4.2. menu](#42-menu)
+   - [4.3. cursorOperation](#43-cursoroperation)
+   - [4.4. mapAndPlayerStatus](#44-mapandplayerstatus)
+   - [4.5. mapCustom](#45-mapcustom)
+   - [4.6. else](#46-else)
+- [5. 功能实现及创新点介绍](#5-功能实现及创新点介绍)
+
 ## 1. 背景介绍
 
 1. 操作系统：Windows 11
@@ -132,3 +144,13 @@
    1. 得益于地图导入方式，可以通过用与普通地图相同的存储方式，而使用一样的游戏函数
    2. 支持检测地图是否编辑，以判断是否可供进行游戏
    3. 实时编辑模式，简单明了
+
+---
+**[参考文献]:**
+
+1. [C语言 移动光标](https://blog.csdn.net/qq_50832904/article/details/120390428)  
+2. [C语言之文件操作](https://blog.csdn.net/sandalphon4869/article/details/101080917)  
+3. [终于搞懂了回车与换行的区别](https://blog.csdn.net/fanwenbo/article/details/54848429)  
+4. [C语言中的光标定位函数](https://blog.csdn.net/weixin_45631252/article/details/103244899)  
+5. [C语言 移动光标](https://blog.csdn.net/qq_50832904/article/details/120390428)  
+6. [C语言调整控制台颜色、大小、标题、文字位置、窗口位置、按钮](https://blog.csdn.net/cjz2005/article/details/104358000)  

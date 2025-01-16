@@ -1,8 +1,20 @@
 # Project 1
 
-## Basic Goal
+- [1. Basic Goal](#1-basic-goal)
+   - [1.1. Function](#11-function)
+   - [1.2. Map](#12-map)
+   - [1.3. Menu](#13-menu)
+- [2. Details](#2-details)
+   - [2.1. Menu Content](#21-menu-content)
+   - [2.2. Menu Function](#22-menu-function)
+   - [2.3. Map Content](#23-map-content)
+   - [2.4. Map Function](#24-map-function)
+   - [2.5. Player Movement](#25-player-movement)
+   - [2.6. Player Information](#26-player-information)
 
-### Function
+## 1. Basic Goal
+
+### 1.1. Function
 
 1. move  
    1. up
@@ -21,7 +33,7 @@
    1. real-time mode
    2. program mode
 
-### Map
+### 1.2. Map
 
 1. ASCII character
    1. wall
@@ -34,7 +46,7 @@
    2. trap punishment  
    3. final goal : get all the treasure  
 
-### Menu
+### 1.3. Menu
 
 1. welcome
    1. start
@@ -43,9 +55,9 @@
    1. switch game level
    2. switch the mode
 
-## Details
+## 2. Details
 
-### Menu Content
+### 2.1. Menu Content
 
 1. menu hierarchy  
    1. main menu
@@ -63,14 +75,14 @@
    1. real-time mode
    2. programming mode
 
-### Menu Function
+### 2.2. Menu Function
 
    1. select menu hierarchy
    2. print menu
    3. move cursor
    4. trigger option
 
-### Map Content
+### 2.3. Map Content
 
 1. character definition
    1. space:ground
@@ -87,19 +99,19 @@
    1. fixed game level
    2. custom game level
 
-### Map Function
+### 2.4. Map Function
 
 1. storage the map data
 2. print the map data
 3. custom map setting
 
-### Player Movement
+### 2.5. Player Movement
 
 1. basic move
 2. map interaction
 3. rollback operation
 
-### Player Information
+### 2.6. Player Information
 
 1. position
 2. energy cost
